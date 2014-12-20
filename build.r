@@ -122,7 +122,8 @@ for(ii in unique(b$legislature)) {
   n %v% "party" = as.character(sp[ network.vertex.names(n), "party" ])
   n %v% "partyname" = as.character(groups[ n %v% "party" ])
   n %v% "lr" = as.numeric(scores[ n %v% "party" ])
-  n %v% "photo" = as.character(sp[ network.vertex.names(n), "photo" ])
+  n %v% "photo" = as.character(gsub("/", "_", gsub("http://www3.lrs.lt/home/seimo_nariu_nuotraukos/", "",
+                                                   sp[ network.vertex.names(n), "photo" ])))
   # mandate years done up to start year of legislature
   sp$nyears = sapply(sp$mandates, function(x) {
     sum(unlist(strsplit(x, ";")) <= as.numeric(substr(ii, 1, 4)))
@@ -171,8 +172,8 @@ for(ii in unique(b$legislature)) {
   # replace uids with names
   network.vertex.names(n) = sp[ network.vertex.names(n), "name" ]
 
-  n %e% "source" = sp[ n %e% "source", "name" ]
-  n %e% "target" = sp[ n %e% "target", "name" ]
+  set.edge.attribute(n, "source", sp[ n %e% "source", "name" ])
+  set.edge.attribute(n, "target", sp[ n %e% "target", "name" ])
 
   edges$i = sp[ edges$i, "name" ]
   edges$j = sp[ edges$j, "name" ]
