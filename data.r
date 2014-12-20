@@ -42,7 +42,7 @@ if(!file.exists(bills)) {
         x = x[ x != "" ]
         data.frame(text = x[1], authors = x[2], stringsAsFactors = FALSE)
       })
-      text = rbind.fill(text)
+      text = rbind_all(text)
 
       # cosponsor URLs
       co  = xpathSApply(h, "//table[@class='basicnoborder']/tr//a[contains(@href, 'p_daug')]/@href")

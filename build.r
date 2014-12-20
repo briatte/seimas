@@ -40,7 +40,7 @@ for(ii in unique(b$legislature)) {
   # directed edge list
   #
 
-  edges = rbind.fill(lapply(bills$sponsors, function(d) {
+  edges = rbind_all(lapply(bills$sponsors, function(d) {
 
     w = unlist(strsplit(d, ";"))
 
