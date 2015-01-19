@@ -208,7 +208,7 @@ if(!file.exists(sponsors)) {
       sex = ifelse(grepl("Seimo narė", details), "F", "M")
 
       constituency = gsub("Išrinkta(s)?\\s+|\\s\\((.*)", "",
-                          str_extract(details, "Išrinkta(s)?\\s(.*?),"))
+                          str_extract(details, "Išrinkta(s)?\\s(.*?)(,|\\d+)"))
 
       party = gsub("iškėlė\\s|\\sBiuro(.*)", "",
                    str_extract(details, "iškėlė\\s(.*)"))
@@ -225,7 +225,7 @@ if(!file.exists(sponsors)) {
 
       mdts = xpathSApply(h, "//table[@summary='Istorija']//a/..", xmlValue)
 
-      s = rbind(s, data.frame(name, sex, born, constituency, party,
+      s = rbind(s, data.frame(file, name, sex, born, constituency, party,
                               mandates = ifelse(length(mdts), mdts, NA),
                               photo, url = i,
                               stringsAsFactors = FALSE))
@@ -241,12 +241,15 @@ if(!file.exists(sponsors)) {
   # many constituencies are missing, as with birth years
   s$constituency = gsub("\\s-(.*)|,$", "", s$constituency)
 
+  # missing values (leaves 3 missing in 2008, 2 in 2012)
+  s$constituency[ s$name %in% c("Arminas LYDEKA", "Jonas PINSKUS", "Rimas Antanas RUČYS") ] = "pagal sąrašą"
+
   # party abbreviations
   s$party = str_trim(s$party)
   s$party[ grepl("Išsikėlė pats|Mišri Seimo narių grupė", s$party) ] = "IND" # or mixed group
   s$party[ grepl("(V|v)alstiečių", s$party) ] = "LVZS" # ex-LVLS + Naujosios demokratijos partija, NDP
   s$party[ grepl("Tvarka|Pakso", s$party) ] = "TT"
-  s$party[ grepl("Liberalų ir centro", s$party) ] = "LiCS"
+  s$party[ grepl("Liberalų ir centro", s$party) ] = "LICS"
   s$party[ grepl("Tautos", s$party) ] = "TPP"
   s$party[ grepl("(L|l)iberalų", s$party) ] = "LS"
   s$party[ grepl("^Tėvynės", s$party) ] = "TS-LKD"
@@ -260,7 +263,7 @@ if(!file.exists(sponsors)) {
   s$party[ grepl("p_asm_id=47910", s$url) ] = "IND"  # Mantas VARAŠKA
   s$party[ grepl("p_asm_id=53907", s$url) ] = "IND"  # Valdemaras VALKIŪNAS
   s$party[ grepl("p_asm_id=53904", s$url) ] = "IND"  # Jonas STANEVIČIUS
-  s$party[ grepl("p_asm_id=47898", s$url) ] = "LiCS" # Andrius BURBA
+  s$party[ grepl("p_asm_id=47898", s$url) ] = "LICS" # Andrius BURBA
 
   s$mandates = gsub("\u0097", "-", s$mandates)
   s$mandates = gsub("Buvo išrinkta(s)? į ", "", s$mandates)

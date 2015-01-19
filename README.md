@@ -27,6 +27,8 @@ There is no strict separation between authors and cosponsors: when there are man
 
 ## Sponsors
 
+The sponsors data have multiple entries for each sponsor (one per legislature in which the sponsor sat).
+
 - `legislature` – legislature years
 - `url` – profile URL
 - `photo` – photo URL
