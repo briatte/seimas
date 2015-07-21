@@ -1,7 +1,8 @@
 This repository contains code to build cosponsorship networks from bills passed in the [Lithuanian Parliament](http://www.lrs.lt/).
 
-- [interactive demo](http://briatte.org/seimas)
-- [static plots](http://briatte.org/seimas/plots.html)
+- [interactive demo](http://f.briatte.org/parlviz/seimas)
+- [static plots](http://f.briatte.org/parlviz/seimas/plots.html)
+- [more countries](https://github.com/briatte/parlnet)
 
 # HOWTO
 
