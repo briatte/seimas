@@ -17,7 +17,7 @@ if(!file.exists(bills)) {
   for(i in as.numeric(n):1) {
 
     cat(sprintf("%4.0f", i))
-    file = paste0("raw/bills-", i, ".html")
+    file = paste0("raw/bill-lists/bills-", i, ".html")
 
     if(!file.exists(file))
       try(download.file(paste0(root, p, "&p_no=", i), file, quiet = TRUE, mode = "wb"))
@@ -54,7 +54,7 @@ if(!file.exists(bills)) {
       for(j in co) {
 
         cat(".")
-        file = paste0("raw/details-", coid[ which(co == j) ], ".html")
+        file = paste0("raw/bill-pages/bill-", coid[ which(co == j) ], ".html")
 
         if(!file.exists(file))
           try(download.file(paste0(root, j), file, quiet = TRUE, mode = "wb"))
@@ -69,8 +69,11 @@ if(!file.exists(bills)) {
           h = htmlParse(file)
           h = xpathSApply(h, "//ul/li", xmlValue)
           h = gsub("(.*)(Seimas|frakcija), |Darbo grupė, ", "", h)
-          h = h[ !grepl("(komisija|komitetas|Seimas)$", h) & h != "Darbo grupė" ]
+          h = h[ !grepl("(komisija|komitetas|Seimas)$", h) &
+                   !h %in% c("Darbo grupė", "2014-01-14 Pateikė - Darbo grupė") ]
+
           stopifnot(!grepl("Darbo", h))
+
           if(length(h))
             cosponsors[ cosponsors == j ] = paste0(h, collapse = ", ")
           else
@@ -96,14 +99,6 @@ if(!file.exists(bills)) {
   b = subset(b, !grepl("\\w+ komitetas|komisija$|Lietuvos Respublikos|Projektas|PROJEKTAS", authors))
   b = subset(b, !grepl("^Seimo|Senato|STT|1|\\.pdf|^\\(|^Liberalų|pakomitetis|raštas|rakcija", authors))
   b = subset(b, authors != "")
-
-  au = unlist(strsplit(b$authors, ", "))
-  table(au)
-  table(toupper(au) %in% d$id)
-
-  co = unlist(strsplit(b$cosponsors, ", "))
-  table(co)
-  table(co[ !toupper(co) %in% toupper(d$name) ])
 
   b$legislature = NA
   b$legislature[ as.Date(b$date) > as.Date("2012-10-14") ] = "2012-2016"
@@ -175,7 +170,7 @@ if(!file.exists(sponsors)) {
   for(i in rev(u)) {
 
     cat(sprintf("%4.0f", which(u == i)))
-    file = gsub("(.*)&p_asm_id=(.*)", "raw/mp-\\2", i)
+    file = gsub("(.*)&p_asm_id=(.*)", "raw/mp-pages/mp-\\2", i)
     file = gsub("&p_kade_id=7$", ".html", file) # current legislature
 
     if(!file.exists(file))
@@ -311,6 +306,14 @@ for(i in rev(unique(s$photo))) {
   }
 
 }
+
+au = unlist(strsplit(b$authors, ", "))
+table(toupper(au) %in% s$id)
+table(au[ !toupper(au) %in% toupper(s$id) ])
+
+co = unlist(strsplit(b$cosponsors, ", "))
+table(toupper(na.omit(co)) %in% toupper(s$name))
+table(co[ !toupper(na.omit(co)) %in% toupper(s$name) ])
 
 # all set
 

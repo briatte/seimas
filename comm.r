@@ -2,7 +2,7 @@
 
 load("data/net_lt.rda")
 raw = data.frame()
-sponsors = dir("raw", pattern = "^mp-\\d+\\.html$", full.names = TRUE)
+sponsors = list.files("raw/mp-pages", full.names = TRUE)
 
 # find unique committees
 
@@ -35,14 +35,14 @@ comm = data.frame(n = unique(raw$n), stringsAsFactors = FALSE)
 
 # add sponsor columns
 for(i in sponsors)
-  comm[, gsub("raw/mp-|\\.html", "", i) ] = 0
+  comm[, gsub("raw/mp-pages/mp-|\\.html", "", i) ] = 0
 
-raw$i = gsub("raw/mp-|\\.html", "", raw$i)
+raw$i = gsub("raw/mp-pages/mp-|\\.html", "", raw$i)
 
 for(i in colnames(comm)[ -1 ])
   comm[ , i ] = as.numeric(comm$n %in% raw$n[ raw$i == i ])
 
-stopifnot(gsub("raw/mp-|\\.html", "", s$file) %in% names(comm[, -1]))
+stopifnot(gsub("raw/mp-pages/mp-|\\.html", "", s$file) %in% names(comm[, -1]))
 
 # assign co-memberships to networks
 for(i in ls(pattern = "^net_")) {
