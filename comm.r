@@ -44,7 +44,7 @@ for (i in colnames(comm)[ -1 ])
 stopifnot(gsub("raw/mp-pages/mp-|\\.html", "", s$file) %in% names(comm[, -1]))
 
 # assign co-memberships to networks
-for (i in ls(pattern = "^net_")) {
+for (i in ls(pattern = "^net_lt")) {
 
   n = get(i)
   cat(i, ":", network.size(n), "nodes")
