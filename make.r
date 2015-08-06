@@ -6,8 +6,13 @@ source("parties.r")
 
 # folders
 
-dir.create("data"   , showWarnings = FALSE)
-dir.create("plots"  , showWarnings = FALSE)
+dir.create("data"  , showWarnings = FALSE)
+dir.create("plots" , showWarnings = FALSE)
+
+if (file.exists("photos.zip"))
+  unzip("photos.zip")
+
+dir.create("photos", showWarnings = FALSE)
 
 if (file.exists("raw.zip"))
   unzip("raw.zip")
@@ -16,11 +21,6 @@ dir.create("raw"            , showWarnings = FALSE)
 dir.create("raw/bill-lists" , showWarnings = FALSE)
 dir.create("raw/bill-pages" , showWarnings = FALSE)
 dir.create("raw/mp-pages"   , showWarnings = FALSE)
-
-if (file.exists("photos.zip"))
-  unzip("photos.zip")
-
-dir.create("photos" , showWarnings = FALSE)
 
 # parameters
 
