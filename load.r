@@ -1,6 +1,7 @@
 # data
 
 library(dplyr)
+library(httr) # not used, constituencies not checked
 library(stringr)
 library(XML)
 

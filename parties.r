@@ -1,17 +1,4 @@
-groups = c(
-  "LSDP" = "Lietuvos socialdemokratų partija", # Soc-Dem, red
-  "LVZS" = "Lietuvos valstiečių ir žaliųjų sąjunga", # Peasants and Greens, green
-  "DP" = "Darbo partija",    # Labour Party, dark blue
-  "LLRA" = "Lietuvos lenkų rinkimų akcija",    # Poles, light red
-  "NS" = "Naujoji sąjunga (socialliberalai)", # New Union, blue
-  "TT" = "Tvarka ir teisingumas", # Order & Justice, yellow
-  "TS-LKD" = "Tėvynės sąjunga - Lietuvos krikščionys demokratai", # Chr-Dems, light blue
-  "LS" = "Liberalų sąjūdis", # Liberal Movement, orange
-  "LICS" = "Liberalų ir centro sąjunga", # Liberal/Centre Union, yellow and blue -- dark green/teal
-  "TPP" = "Tautos prisikėlimo partija", # National Resurrection Party, orange and black -- brown
-  "DK" = "Drąsos kelias",    # Way of Courage, purple
-  "IND" = "independent"
-)
+# party colors
 
 colors = c(
   "LSDP" = "#E41A1C",
@@ -28,6 +15,23 @@ colors = c(
   "IND" = "#AAAAAA"
 )
 
+groups = c(
+  "LSDP" = "Lietuvos socialdemokratų partija", # Soc-Dem, red
+  "LVZS" = "Lietuvos valstiečių ir žaliųjų sąjunga", # Peasants and Greens, green
+  "DP" = "Darbo partija",    # Labour Party, dark blue
+  "LLRA" = "Lietuvos lenkų rinkimų akcija",    # Poles, light red
+  "NS" = "Naujoji sąjunga (socialliberalai)", # New Union, blue
+  "TT" = "Tvarka ir teisingumas", # Order & Justice, yellow
+  "TS-LKD" = "Tėvynės sąjunga - Lietuvos krikščionys demokratai", # Chr-Dems, light blue
+  "LS" = "Liberalų sąjūdis", # Liberal Movement, orange
+  "LICS" = "Liberalų ir centro sąjunga", # Liberal/Centre Union, yellow and blue -- dark green/teal
+  "TPP" = "Tautos prisikėlimo partija", # National Resurrection Party, orange and black -- brown
+  "DK" = "Drąsos kelias",    # Way of Courage, purple
+  "IND" = "independent"
+)
+
+# ParlGov Left/Right scores
+
 scores = c(
   "LSDP" = 3.2,
   "LVZS" = 3.3,
@@ -43,5 +47,6 @@ scores = c(
   "IND" = Inf
 )
 
+stopifnot(names(colors) == names(groups))
 stopifnot(names(colors) == names(scores))
-order = names(colors)[ order(scores) ]
+

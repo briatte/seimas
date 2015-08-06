@@ -3,7 +3,7 @@ sponsors = "data/sponsors.csv"
 
 # scrape bills
 
-if(!file.exists(bills)) {
+if (!file.exists(bills)) {
 
   root = "http://www3.lrs.lt/pls/inter3/"
 
@@ -14,15 +14,15 @@ if(!file.exists(bills)) {
   p = gsub("(.*)&p_no=(\\d+)", "\\1", p) # root with session
 
   b = data.frame()
-  for(i in as.numeric(n):1) {
+  for (i in as.numeric(n):1) {
 
     cat(sprintf("%4.0f", i))
     file = paste0("raw/bill-lists/bills-", i, ".html")
 
-    if(!file.exists(file))
+    if (!file.exists(file))
       try(download.file(paste0(root, p, "&p_no=", i), file, quiet = TRUE, mode = "wb"))
 
-    if(!file.info(file)$size) {
+    if (!file.info(file)$size) {
 
       cat(": failed\n")
       file.remove(file)
@@ -40,7 +40,7 @@ if(!file.exists(bills)) {
       text = lapply(text, function(x) {
         x = unlist(strsplit(x, "\\n"))
         x = x[ x != "" ]
-        data.frame(text = x[1], authors = x[2], stringsAsFactors = FALSE)
+        data_frame(text = x[1], authors = x[2])
       })
       text = bind_rows(text)
 
@@ -51,15 +51,15 @@ if(!file.exists(bills)) {
       cosponsors = rep(NA, length(uids))
       cosponsors[ uids %in% coid ] = co
 
-      for(j in co) {
+      for (j in co) {
 
         cat(".")
         file = paste0("raw/bill-pages/bill-", coid[ which(co == j) ], ".html")
 
-        if(!file.exists(file))
+        if (!file.exists(file))
           try(download.file(paste0(root, j), file, quiet = TRUE, mode = "wb"))
 
-        if(!file.info(file)$size) {
+        if (!file.info(file)$size) {
 
           cat(": failed (details)\n")
           file.remove(file)
@@ -74,7 +74,7 @@ if(!file.exists(bills)) {
 
           stopifnot(!grepl("Darbo", h))
 
-          if(length(h))
+          if (length(h))
             cosponsors[ cosponsors == j ] = paste0(h, collapse = ", ")
           else
             cosponsors[ cosponsors == j ] = NA
@@ -83,7 +83,7 @@ if(!file.exists(bills)) {
 
       }
 
-      b = rbind(b, data.frame(uids, urls, date, text, cosponsors, stringsAsFactors = FALSE))
+      b = rbind(b, data_frame(uids, urls, date, text, cosponsors))
       cat("\n")
 
     }
@@ -114,7 +114,7 @@ b = read.csv(bills, stringsAsFactors = FALSE)
 
 # scrape sponsors
 
-if(!file.exists(sponsors)) {
+if (!file.exists(sponsors)) {
 
   # 2004-8
   h = htmlParse("http://www3.lrs.lt/docs3/kad5/w5_istorija.show5-p_r=786&p_k=1.html")
@@ -124,9 +124,8 @@ if(!file.exists(sponsors)) {
   f = xpathSApply(h, "//a[contains(@href, 'p_asm_id=')]/strong", xmlValue)
   n = str_replace(n, f, "")
 
-  d = data.frame(legislature = "2004-2008", url = u, name = paste(n, f),
-                 id = paste0(substr(n, 1, 1), ".", f),
-                 stringsAsFactors = FALSE)
+  d = data_frame(legislature = "2004-2008", url = u, name = paste(n, f),
+                 id = paste0(substr(n, 1, 1), ".", f))
 
   # 2008-12
   h = htmlParse("http://www3.lrs.lt/docs3/kad6/w6_istorija.show6-p_r=6113&p_k=1.html")
@@ -136,9 +135,8 @@ if(!file.exists(sponsors)) {
   f = xpathSApply(h, "//a[contains(@href, 'p_asm_id=')]/strong", xmlValue)
   n = str_replace(n, f, "")
 
-  d = rbind(d, data.frame(legislature = "2008-2012", url = u, name = paste(n, f),
-                          id = paste0(substr(n, 1, 1), ".", f),
-                          stringsAsFactors = FALSE))
+  d = rbind(d, data_frame(legislature = "2008-2012", url = u, name = paste(n, f),
+                          id = paste0(substr(n, 1, 1), ".", f)))
 
   # 2012-16
   h = htmlParse("http://www3.lrs.lt/pls/inter/w5_show?p_r=8801&p_k=1")
@@ -151,9 +149,8 @@ if(!file.exists(sponsors)) {
   })
   n = str_replace(n, paste0(" ", f), "")
 
-  d = rbind(d, data.frame(legislature = "2012-2016", url = u, name = paste(n, f),
-                          id = paste0(substr(n, 1, 1), ".", f),
-                          stringsAsFactors = FALSE))
+  d = rbind(d, data_frame(legislature = "2012-2016", url = u, name = paste(n, f),
+                          id = paste0(substr(n, 1, 1), ".", f)))
 
   rownames(d) = paste0(d$legislature, "-", d$id)
 
@@ -167,16 +164,16 @@ if(!file.exists(sponsors)) {
 
   s = data.frame()
 
-  for(i in rev(u)) {
+  for (i in rev(u)) {
 
     cat(sprintf("%4.0f", which(u == i)))
     file = gsub("(.*)&p_asm_id=(.*)", "raw/mp-pages/mp-\\2", i)
     file = gsub("&p_kade_id=7$", ".html", file) # current legislature
 
-    if(!file.exists(file))
+    if (!file.exists(file))
       try(download.file(i, file, quiet = TRUE, mode = "wb"))
 
-    if(!file.info(file)$size) {
+    if (!file.info(file)$size) {
 
       cat(": failed", i, "\n")
       file.remove(file)
@@ -187,7 +184,7 @@ if(!file.exists(sponsors)) {
       name = xpathSApply(h, "//meta[@name='description']/@content")
       details = xpathSApply(h, "//table[@class='MsoTableGrid']//td", xmlValue)
 
-      if(length(details)) {
+      if (length(details)) {
 
         details = str_clean(details)
         born = details[ which(grepl("Gimimo data", details)) + 1 ]
@@ -208,7 +205,7 @@ if(!file.exists(sponsors)) {
       party = gsub("iškėlė\\s|\\sBiuro(.*)", "",
                    str_extract(details, "iškėlė\\s(.*)"))
 
-      if(is.na(party)) {
+      if (is.na(party)) {
 
         party = xpathSApply(h, "//b[contains(text(), 'Seimo frakcijose')]/following-sibling::ul[1]/li/a", xmlValue)
         party = unique(party)
@@ -220,10 +217,9 @@ if(!file.exists(sponsors)) {
 
       mdts = xpathSApply(h, "//table[@summary='Istorija']//a/..", xmlValue)
 
-      s = rbind(s, data.frame(file, name, sex, born, constituency, party,
+      s = rbind(s, data_frame(file, name, sex, born, constituency, party,
                               mandates = ifelse(length(mdts), mdts, NA),
-                              photo, url = i,
-                              stringsAsFactors = FALSE))
+                              photo, url = i))
       cat(":", name, "\n")
 
     }
@@ -284,15 +280,15 @@ if(!file.exists(sponsors)) {
 s = read.csv(sponsors, stringsAsFactors = FALSE)
 
 # photos, all .jpg -- rerun entire script to solve network errors
-for(i in rev(unique(s$photo))) {
+for (i in rev(unique(s$photo))) {
 
   #cat(sprintf("%4.0f", which(unique(s$photo) == i)))
   file = gsub("http://www3.lrs.lt/home/seimo_nariu_nuotraukos/(\\d+)/", "photos/\\1_", i)
 
-  if(!file.exists(file))
+  if (!file.exists(file))
     try(download.file(i, file, mode = "wb", quiet = TRUE))
 
-  if(!file.info(file)$size) {
+  if (!file.info(file)$size) {
 
     #cat(": failed\n")
     file.remove(file)
@@ -301,11 +297,36 @@ for(i in rev(unique(s$photo))) {
   } else {
 
     #cat("\n")
-    s$photo[ s$photo == i ] = gsub("photos/|\\.jpg", "", i) # shortened
+    s$photo[ s$photo == i ] = file
 
   }
 
 }
+
+s$constituency = str_trim(s$constituency)
+
+# ============================================================================
+# QUALITY CONTROL
+# ============================================================================
+
+# - might be missing: born (int of length 4), constituency (chr),
+#   photo (chr, folder/file.ext)
+# - never missing: sex (chr, F/M), nyears (int), url (chr, URL),
+#   party (chr, mapped to colors)
+
+cat("Missing", sum(is.na(s$born)), "years of birth\n")
+stopifnot(is.integer(s$born) & nchar(s$born) == 4 | is.na(s$born))
+
+cat("Missing", sum(is.na(s$constituency)), "constituencies\n")
+stopifnot(is.character(s$constituency))
+
+cat("Missing", sum(is.na(s$photo)), "photos\n")
+stopifnot(is.character(s$photo) & grepl("^photos(_\\w{2})?/(.*)\\.\\w{3}", s$photo) | is.na(s$photo))
+
+stopifnot(!is.na(s$sex) & s$sex %in% c("F", "M"))
+# stopifnot(!is.na(s$nyears) & is.integer(s$nyears)) # computed on the fly
+stopifnot(!is.na(s$url) & grepl("^http(s)?://(.*)", s$url))
+stopifnot(s$party %in% names(colors))
 
 au = unlist(strsplit(b$authors, ", "))
 table(toupper(au) %in% s$id)
