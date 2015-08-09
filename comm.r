@@ -1,6 +1,6 @@
 # add committee co-memberships
 
-raw = data.frame()
+raw = data_frame()
 sponsors = list.files("raw/mp-pages", full.names = TRUE)
 
 # find unique committees
