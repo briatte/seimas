@@ -105,7 +105,7 @@ for (ii in unique(b$legislature) %>% sort) {
   n %n% "ipu" = meta[ "ipu" ] %>% as.integer
   n %n% "seats" = meta[ "seats" ] %>% as.integer
 
-  n %n% "n_cosponsored" = nrow(data)
+  n %n% "n_cosponsored" = nrow(bills)
   n %n% "n_sponsors" = table(data$n_au) # already subset to legislature
 
   # ============================================================================
