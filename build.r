@@ -1,35 +1,68 @@
-for (ii in unique(b$legislature) %>% sort) {
+ll = c("1992-1996", "1996-2000", "2000-2004",
+       "2004-2008", "2008-2012", "2012-2016")
+
+# au = unlist(strsplit(b$authors, ",\\s"))
+# table(toupper(au) %in% s$id)
+# table(au[ !toupper(au) %in% s$id ])
+#
+# co = unlist(strsplit(b$cosponsors, ", ")) %>% na.omit
+# table(toupper(co) %in% toupper(s$name))
+# table(co[ !toupper(co) %in% toupper(s$name) ])
+
+for (ii in unique(b$legislature) %>% sort %>% rev) {
 
   cat(ii)
 
-  data = subset(b, legislature == ii &!is.na(authors))
+  data = subset(b, legislature == ii)
   sp = subset(s, legislature == ii)
 
-  # translate all sponsor names to uids
-  for (jj in 1:nrow(data)) {
+  m = unlist(strsplit(data$authors, ",\\s?"))
+  m = m[ !toupper(m) %in% s$id ]
+  if (length(m))
+    cat(" [missing", n_distinct(m), "authors]")
 
-    au = unlist(strsplit(data$authors[ jj ], ", "))
-    au = sp$id[ sp$id %in% toupper(au) ]
-    data$authors[ jj ] = ifelse(!length(au), NA, paste0(au, collapse = ";"))
+  # convert all authors to full names
+  rownames(sp) = sp$id
+  data$authors = sapply(toupper(data$authors), function(x) {
+    x = strsplit(x, ",\\s?") %>% unlist %>% str_trim
+    paste0(na.omit(sp[ x, "name" ]), collapse = ";")
+  })
 
-    co = unlist(strsplit(data$cosponsors[ jj ], ", "))
-    co = sp$id[ toupper(sp$name) %in% toupper(co) ]
-    data$cosponsors[ jj ] = ifelse(!length(co), NA, paste0(co, collapse = ";"))
+  m = unlist(strsplit(b$cosponsors, ", ")) %>% na.omit
+  m = m[ !toupper(m) %in% toupper(s$name) ]
+  if (length(m))
+    cat(" [missing", n_distinct(m), "cosponsors]")
 
-  }
+  # convert all cosponsors to full names
+  rownames(sp) = toupper(sp$name)
+  data$cosponsors = sapply(toupper(data$cosponsors), function(x) {
+    x = strsplit(x, ",\\s?") %>% unlist %>% str_trim
+    paste0(na.omit(sp[ x, "name" ]), collapse = ";")
+  })
 
-  # lose a few bills from previous legislature(s)
-  data = subset(data, !is.na(authors))
+  # drop bills with no sponsor information at all
+  data = filter(data, nchar(authors) > 1 | nchar(cosponsors) > 1)
 
-  # bills with no "more authors..." page
-  data$sponsors = data$authors
+  # assign all cosponsors as first authors when the latter are missing
+  m = (data$authors == "")
+  data$authors[ m ] = data$cosponsors[ m ]
 
-  # bills with a "more authors..." page (all sponsors in cosponsors)
-  data$sponsors[ !is.na(data$cosponsors) ] = data$cosponsors[ !is.na(data$cosponsors) ]
+  # check whether cosponsors contain all first authors in the same order
+  m = (data$cosponsors == "")
+  m[ !m ] = str_detect(data$cosponsors[ !m ], data$authors[ !m ])
 
+  # the two sponsor columns are compatible with each other, except for a
+  # few rows in the current legislature; generally speaking, because the
+  # 'cosponsors' column corresponds to the 'more authors' page, it should
+  # be more accurate than the 'authors' column, which misses a few names
+  stopifnot(all(m) | ii == "2012-2016")
+
+  # use 'authors' (bills with no "more authors..." page) or 'cosponsors'
+  data$sponsors = ifelse(data$cosponsors == "", data$authors, data$cosponsors)
+
+  # create separate dataset for cosponsored bills
   data$n_au = 1 + str_count(data$sponsors, ";")
-
-  bills = subset(data, n_au > 1)
+  bills = filter(data, n_au > 1)
 
   cat(":", nrow(bills), "cosponsored documents, ")
 
@@ -37,15 +70,14 @@ for (ii in unique(b$legislature) %>% sort) {
   # DIRECTED EDGE LIST
   # ============================================================================
 
-  edges = bind_rows(lapply(bills$sponsors, function(d) {
+  edges = lapply(bills$sponsors, function(d) {
 
     w = unlist(strsplit(d, ";"))
-
     d = expand.grid(i = w, j = w[1], stringsAsFactors = FALSE)
 
     return(data.frame(d, w = length(w) - 1)) # number of cosponsors
 
-  }))
+  }) %>% bind_rows
 
   # ============================================================================
   # EDGE WEIGHTS
@@ -99,7 +131,7 @@ for (ii in unique(b$legislature) %>% sort) {
   n %n% "country" = meta[ "cty" ] %>% as.character
   n %n% "lang" = meta[ "lang" ] %>% as.character
   n %n% "years" = ii %>% as.character
-  n %n% "legislature" = NA_character_
+  n %n% "legislature" = as.character(which(ll == ii) + 5)
   n %n% "chamber" = meta[ "ch" ] %>% as.character
   n %n% "type" = meta[ "type" ] %>% as.character
   n %n% "ipu" = meta[ "ipu" ] %>% as.integer
@@ -123,7 +155,7 @@ for (ii in unique(b$legislature) %>% sort) {
 
   cat(network.size(n), "nodes\n")
 
-  rownames(sp) = sp$id
+  rownames(sp) = sp$name
 
   n %v% "url" = sp[ network.vertex.names(n), "url" ]
   n %v% "sex" = sp[ network.vertex.names(n), "sex" ]
@@ -133,7 +165,8 @@ for (ii in unique(b$legislature) %>% sort) {
   n %v% "constituency" = sp[ network.vertex.names(n), "constituency" ]
   n %v% "lr" = scores[ n %v% "party" ] %>% as.numeric
   n %v% "photo" = sp[ network.vertex.names(n), "photo" ]
-  # mandate years done up to start year of legislature
+  # mandate years done up to start year of legislature, imputed for all networks
+  # except the last one, using past sponsor profiles
   sp$nyears = sapply(sp$mandates, function(x) {
     sum(unlist(strsplit(x, ";")) <= as.numeric(substr(ii, 1, 4)))
   })
@@ -162,15 +195,6 @@ for (ii in unique(b$legislature) %>% sort) {
   # ============================================================================
   # SAVE OBJECTS
   # ============================================================================
-
-  # replace uids with names
-  network.vertex.names(n) = sp[ network.vertex.names(n), "name" ]
-
-  set.edge.attribute(n, "source", sp[ n %e% "source", "name" ])
-  set.edge.attribute(n, "target", sp[ n %e% "target", "name" ])
-
-  edges$i = sp[ edges$i, "name" ]
-  edges$j = sp[ edges$j, "name" ]
 
   assign(paste0("net_lt", substr(ii, 1, 4)), n)
   assign(paste0("edges_lt", substr(ii, 1, 4)), edges)
