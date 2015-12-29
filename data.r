@@ -473,7 +473,7 @@ if (!file.exists(sponsors)) {
   s$party[ s$id == "V.EINORIS" ] = "LDDP" # Vytautas EINORIS (WP-ET)
   s$party[ s$legislature == "2000-2004" & s$id == "V.EINORIS" ] = "LSDP" # Vytautas EINORIS (WP-ET)
   s$party[ s$id == "K.SKREBYS" ] = "IND" # Kęstutis SKREBYS (single Ind. party member)
-  s$party[ s$id == "N.AMBRAZAITYTĖ" ] = "IND" # Nijolė AMBRAZAITYTĖ (single LPCH party member)
+  s$party[ s$id == "N.AMBRAZAITYTĖ" ] = "IND" # Nijolė AMBRAZAITYTĖ (single LRPCH party member)
   s$party[ s$legislature == "1992-1996" & s$id == "T.LIDEIKIS" ] = "SK" # Tautvydas LIDEIKIS
   s$party[ s$legislature == "1992-1996" & s$id == "J.BASTYS" ] = "LDDP" # Juozas BASTYS
   s$party[ s$legislature == "1992-1996" & s$id == "J.BULAVAS" ] = "LDDP" # Juozas BULAVAS
